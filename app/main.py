@@ -56,7 +56,7 @@ def main():
     # wait for client
     client_socket, client_address = server_socket.accept()
 
-    request = client_socket.recv(1024)
+    request = client_socket.recv(1024)      # 1024 byte size
 
     request_analyzer = RequestAnalyzer(request=request)
     response = request_analyzer.parse_request()

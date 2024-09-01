@@ -23,10 +23,11 @@ def main():
         reuse_port=True,
     )
 
-    client_socket, client_address = server_socket.accept()      # wait for client
-    client_socket.sendall(
-        __data=f"{HttpResponseStatusCodes.SUCCESSFUL}{END_RESPONSE}".encode()
-    )
+    # wait for client
+    client_socket, client_address = server_socket.accept()
+
+    # HTTP version MESSAGE HEADING STATUS CODE  \r\n\r\n
+    client_socket.sendall(f"{HttpResponseStatusCodes.SUCCESSFUL}{END_RESPONSE}".encode())
 
 
 if __name__ == "__main__":

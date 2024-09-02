@@ -1,5 +1,6 @@
 import platform
-import socket  # noqa: F401
+import socket
+from threading import Thread
 from socket import create_server, socket as Socket
 
 
@@ -84,33 +85,36 @@ class RequestAnalyzer:
 END_RESPONSE = "\r\n\r\n"
 
 
-def main():
-    # You can use print statements as follows for debugging, they'll be visible when running tests.
-    print("Logs from your program will appear here!")
-
-    _HOST = "localhost"
-    _PORT = 4221
-
-    reuse_port = False
-    if platform.system() != "Windows":
-        reuse_port = True
-
-    server_socket: Socket = create_server(
-        address=(_HOST, _PORT),
-        reuse_port=reuse_port,
-    )
-
-    # wait for client
-    client_socket, client_address = server_socket.accept()
-
-    request = client_socket.recv(1024)      # 1024 byte size
+def handle_request(client_socket: Socket):
+    request = client_socket.recv(1024)  # 1024 byte size
 
     request_analyzer = RequestAnalyzer(request=request)
     response = request_analyzer.parse_request()
 
     # HTTP version MESSAGE HEADING STATUS CODE  \r\n\r\n
     client_socket.sendall(f"{response}".encode())
+    client_socket.close()
+
+
+
+def main():
+    _HOST = "localhost"
+    _PORT = 4221
+
+    print(f"Starting server on http://{_HOST}:{_PORT}")
+
+    reuse_port = False
+    if platform.system() != "Windows":
+        reuse_port = True
+
+    server_socket = create_server(address=(_HOST, _PORT), reuse_port=reuse_port)
+
+    # wait for client
+    client_socket, client_address = server_socket.accept()
+    thread = Thread(target=handle_request, args=(client_socket,))
+    thread.start()
 
 
 if __name__ == "__main__":
     main()
+    print("Server closed")
